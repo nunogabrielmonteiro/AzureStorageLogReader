@@ -14,6 +14,6 @@ It is possible to choose which columns appear in the grid.
 
 And allows to Sort and Filter the grid.
 
-![Filter:](https://github.com/nunomo/AzureStorageLogReader/blob/main/images/AzureStorageLogReader_2.png)
+![Filter:](https://github.com/nunomo/AzureStorageLogReader/blob/main/images/AzureStorageLogReader_3.png)
 
 And export data to Excel format.
