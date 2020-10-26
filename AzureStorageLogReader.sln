@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30320.27
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureStorageLogReader", "AzureStorageLogReader\AzureStorageLogReader.csproj", "{69C1EEE9-FB38-4A06-9B45-EDDAB58C063F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{69C1EEE9-FB38-4A06-9B45-EDDAB58C063F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69C1EEE9-FB38-4A06-9B45-EDDAB58C063F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69C1EEE9-FB38-4A06-9B45-EDDAB58C063F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69C1EEE9-FB38-4A06-9B45-EDDAB58C063F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1101EA0A-05C9-4435-B39C-3FD5A6FD6B06}
+	EndGlobalSection
+EndGlobal
