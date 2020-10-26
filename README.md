@@ -1,6 +1,6 @@
 # AzureStorageLogReader
 
-It is a GUI Windows application (.Net 4.7.2 Windows Forms App) that allows to read and export the Azure Storage Log files.
+It is a GUI Windows application (.Net 4.7.2 Windows Forms) that allows to read and export the Azure Storage Log files.
 
 The application allows us to read log files appending the data to the table, using the Add Log files button, it is possible to choose multiple files.
 
