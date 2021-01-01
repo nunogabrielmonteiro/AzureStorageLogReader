@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30320.27
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureStorageLogReader", "AzureStorageLogReader\AzureStorageLogReader.csproj", "{69C1EEE9-FB38-4A06-9B45-EDDAB58C063F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureStorageLogReaderGui", "AzureStorageLogReader\AzureStorageLogReaderGui.csproj", "{69C1EEE9-FB38-4A06-9B45-EDDAB58C063F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureStorageLogReaderLib", "AzureStorageLogReaderLib\AzureStorageLogReaderLib.csproj", "{45B6B323-449B-4E24-BCE5-D1C4D5F56811}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{69C1EEE9-FB38-4A06-9B45-EDDAB58C063F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{69C1EEE9-FB38-4A06-9B45-EDDAB58C063F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{69C1EEE9-FB38-4A06-9B45-EDDAB58C063F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{45B6B323-449B-4E24-BCE5-D1C4D5F56811}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{45B6B323-449B-4E24-BCE5-D1C4D5F56811}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{45B6B323-449B-4E24-BCE5-D1C4D5F56811}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{45B6B323-449B-4E24-BCE5-D1C4D5F56811}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

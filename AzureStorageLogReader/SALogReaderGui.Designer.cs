@@ -29,10 +29,8 @@
         private void InitializeComponent()
         {
             System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("Storage Accounts");
-            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("Event Hubs");
-            System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("Connections", new System.Windows.Forms.TreeNode[] {
-            treeNode1,
-            treeNode2});
+            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("Connections", new System.Windows.Forms.TreeNode[] {
+            treeNode1});
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SALogReaderGui));
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
@@ -40,6 +38,7 @@
             this.windowsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.connectorPaneToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panelLeft = new System.Windows.Forms.Panel();
             this.treeView = new System.Windows.Forms.TreeView();
             this.panelMain = new System.Windows.Forms.Panel();
@@ -57,7 +56,6 @@
             this.dataGridView = new System.Windows.Forms.DataGridView();
             this.btnAddLogs = new System.Windows.Forms.Button();
             this.openFileDialogJson = new System.Windows.Forms.OpenFileDialog();
-            this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.spinningCircles = new AzureStorageLogReader.SpinningCircles();
             this.menuStrip1.SuspendLayout();
             this.panelLeft.SuspendLayout();
@@ -108,6 +106,12 @@
             this.helpToolStripMenuItem.Size = new System.Drawing.Size(55, 24);
             this.helpToolStripMenuItem.Text = "Help";
             // 
+            // aboutToolStripMenuItem
+            // 
+            this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(133, 26);
+            this.aboutToolStripMenuItem.Text = "About";
+            // 
             // panelLeft
             // 
             this.panelLeft.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
@@ -125,15 +129,12 @@
             this.treeView.Name = "treeView";
             treeNode1.Name = "StorageAccounts";
             treeNode1.Text = "Storage Accounts";
-            treeNode2.Name = "EventHubs";
-            treeNode2.Text = "Event Hubs";
-            treeNode3.Name = "Connections";
-            treeNode3.Text = "Connections";
+            treeNode2.Name = "Connections";
+            treeNode2.Text = "Connections";
             this.treeView.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
-            treeNode3});
+            treeNode2});
             this.treeView.Size = new System.Drawing.Size(418, 606);
             this.treeView.TabIndex = 0;
-            this.treeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView_AfterSelect);
             this.treeView.DoubleClick += new System.EventHandler(this.treeView_DoubleClick);
             // 
             // panelMain
@@ -238,11 +239,11 @@
             // lblFilter
             // 
             this.lblFilter.AutoSize = true;
-            this.lblFilter.Location = new System.Drawing.Point(221, 48);
+            this.lblFilter.Location = new System.Drawing.Point(219, 48);
             this.lblFilter.Name = "lblFilter";
-            this.lblFilter.Size = new System.Drawing.Size(39, 17);
+            this.lblFilter.Size = new System.Drawing.Size(43, 17);
             this.lblFilter.TabIndex = 20;
-            this.lblFilter.Text = "Find:";
+            this.lblFilter.Text = "Filter:";
             // 
             // btnChooseColumns
             // 
@@ -269,7 +270,7 @@
             // lblNumberRows
             // 
             this.lblNumberRows.AutoSize = true;
-            this.lblNumberRows.Location = new System.Drawing.Point(15, 50);
+            this.lblNumberRows.Location = new System.Drawing.Point(15, 49);
             this.lblNumberRows.Name = "lblNumberRows";
             this.lblNumberRows.Size = new System.Drawing.Size(170, 17);
             this.lblNumberRows.TabIndex = 16;
@@ -307,22 +308,15 @@
             this.openFileDialogJson.RestoreDirectory = true;
             this.openFileDialogJson.SupportMultiDottedExtensions = true;
             // 
-            // aboutToolStripMenuItem
-            // 
-            this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(133, 26);
-            this.aboutToolStripMenuItem.Text = "About";
-            // 
             // spinningCircles
             // 
             this.spinningCircles.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.spinningCircles.BackColor = System.Drawing.Color.Transparent;
             this.spinningCircles.Location = new System.Drawing.Point(281, 254);
             this.spinningCircles.Name = "spinningCircles";
-            this.spinningCircles.Size = new System.Drawing.Size(100, 100);
+            this.spinningCircles.Size = new System.Drawing.Size(90, 90);
             this.spinningCircles.TabIndex = 18;
             this.spinningCircles.Text = "spinningCircles1";
-            this.spinningCircles.Click += new System.EventHandler(this.spinningCircles_Click);
             // 
             // SALogReaderGui
             // 
@@ -336,7 +330,6 @@
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "SALogReaderGui";
             this.Text = "Azure Storage Log Reader";
-            this.Load += new System.EventHandler(this.SALogReaderGui_Load);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.panelLeft.ResumeLayout(false);

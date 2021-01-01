@@ -19,6 +19,8 @@ namespace AzureStorageLogReader
         {
             ck = connectionkeys;
             InitializeComponent();
+            FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            StartPosition = FormStartPosition.CenterParent;
         }
 
         private void btnConnect_Click(object sender, EventArgs e)

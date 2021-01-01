@@ -40,9 +40,9 @@
             this.lbllogin.AutoSize = true;
             this.lbllogin.Location = new System.Drawing.Point(11, 13);
             this.lbllogin.Name = "lbllogin";
-            this.lbllogin.Size = new System.Drawing.Size(293, 17);
+            this.lbllogin.Size = new System.Drawing.Size(332, 17);
             this.lbllogin.TabIndex = 0;
-            this.lbllogin.Text = " Storage Account Connection String with Key:";
+            this.lbllogin.Text = " Storage Account Connection String with Key / SAS:";
             // 
             // txtSAconnectionString
             // 
