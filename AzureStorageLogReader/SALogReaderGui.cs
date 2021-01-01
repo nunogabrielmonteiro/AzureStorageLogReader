@@ -803,5 +803,9 @@ namespace AzureStorageLogReader
         }
         #endregion
 
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("A GUI Windows application (.Net 4.7.2 Windows Forms) that allows to read and export the Azure Storage Log files. GitHub repository: https://github.com/nunomo/AzureStorageLogReader");
+        }
     }
 }

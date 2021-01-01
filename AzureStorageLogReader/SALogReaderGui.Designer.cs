@@ -51,12 +51,12 @@
             this.txtFilter = new System.Windows.Forms.TextBox();
             this.lblFilter = new System.Windows.Forms.Label();
             this.btnChooseColumns = new System.Windows.Forms.Button();
+            this.spinningCircles = new AzureStorageLogReader.SpinningCircles();
             this.btbClearTable = new System.Windows.Forms.Button();
             this.lblNumberRows = new System.Windows.Forms.Label();
             this.dataGridView = new System.Windows.Forms.DataGridView();
             this.btnAddLogs = new System.Windows.Forms.Button();
             this.openFileDialogJson = new System.Windows.Forms.OpenFileDialog();
-            this.spinningCircles = new AzureStorageLogReader.SpinningCircles();
             this.menuStrip1.SuspendLayout();
             this.panelLeft.SuspendLayout();
             this.panelMain.SuspendLayout();
@@ -109,8 +109,9 @@
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(133, 26);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.aboutToolStripMenuItem.Text = "About";
+            this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
             // 
             // panelLeft
             // 
@@ -256,6 +257,16 @@
             this.btnChooseColumns.UseVisualStyleBackColor = true;
             this.btnChooseColumns.Click += new System.EventHandler(this.btnChooseColumns_Click);
             // 
+            // spinningCircles
+            // 
+            this.spinningCircles.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.spinningCircles.BackColor = System.Drawing.Color.Transparent;
+            this.spinningCircles.Location = new System.Drawing.Point(281, 254);
+            this.spinningCircles.Name = "spinningCircles";
+            this.spinningCircles.Size = new System.Drawing.Size(90, 90);
+            this.spinningCircles.TabIndex = 18;
+            this.spinningCircles.Text = "spinningCircles1";
+            // 
             // btbClearTable
             // 
             this.btbClearTable.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
@@ -307,16 +318,6 @@
             this.openFileDialogJson.Multiselect = true;
             this.openFileDialogJson.RestoreDirectory = true;
             this.openFileDialogJson.SupportMultiDottedExtensions = true;
-            // 
-            // spinningCircles
-            // 
-            this.spinningCircles.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.spinningCircles.BackColor = System.Drawing.Color.Transparent;
-            this.spinningCircles.Location = new System.Drawing.Point(281, 254);
-            this.spinningCircles.Name = "spinningCircles";
-            this.spinningCircles.Size = new System.Drawing.Size(90, 90);
-            this.spinningCircles.TabIndex = 18;
-            this.spinningCircles.Text = "spinningCircles1";
             // 
             // SALogReaderGui
             // 
