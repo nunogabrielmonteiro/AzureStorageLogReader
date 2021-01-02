@@ -23,6 +23,10 @@ namespace AzureStorageLogReader
         DataTable mainDataTable = new DataTable();
         //Represent the worker thread were all work will be done
         BackgroundWorker backgroundworker = new BackgroundWorker();
+        //Represent the worker thread for the connection pane
+        BackgroundWorker backgroundworkerConnectionPane = new BackgroundWorker();
+
+        BackgroundWorker backgroundworkerConnectionPaneLoadAll = new BackgroundWorker();
         //Store the files paths to load in the grid
         string[] filePaths;
         //Map with the grid headers and the status, if they are visible or not
@@ -30,12 +34,14 @@ namespace AzureStorageLogReader
         private ArrayList saConnectionString = new ArrayList();
         #endregion
 
-        #region public properties
+        #region Properties
         /// <summary>
         /// Property indicates the current mode of the application (Classic,New)
         /// </summary>
+       
         public bool ClassicLogs
         { get; set; }
+      
         //Connection panel state
         public bool VisiblePane { get; set; }
         #endregion
@@ -61,8 +67,17 @@ namespace AzureStorageLogReader
 
             backgroundworker.RunWorkerCompleted += Backgroundworker_RunWorkerCompleted;
 
+            backgroundworkerConnectionPane.DoWork += BackgroundworkerConnectionPane_DoWork;
+
+            backgroundworkerConnectionPane.RunWorkerCompleted += BackgroundworkerConnectionPane_RunWorkerCompleted;
+
+            backgroundworkerConnectionPaneLoadAll.DoWork += BackgroundworkerConnectionPaneLoadAll_DoWork;
+
+            backgroundworkerConnectionPaneLoadAll.RunWorkerCompleted += BackgroundworkerConnectionPaneLoadAll_RunWorkerCompleted;
+
             //Wait animation not visible
             spinningCircles.Visible = false;
+            this.spinningCirclesConnectionPane.Visible = false;
             //Maxime window
             this.WindowState = FormWindowState.Maximized;
             //Default log mode
@@ -161,7 +176,8 @@ namespace AzureStorageLogReader
 
         }
         #endregion
-        
+
+        #region worker threads
         /// <summary>
         /// Start background work
         /// </summary>
@@ -187,13 +203,72 @@ namespace AzureStorageLogReader
             this.btbClearTable.Enabled = true;
 
             SetVisibleColumns();
+
             SetRowCount();
         }
-       
-        /// <summary>
-        /// Updates label with the number of loaded rows
-        /// </summary>  
-       
+        private void BackgroundworkerConnectionPaneLoadAll_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if (dataGridView.DataSource == null)
+            {
+                dataGridView.DataSource = mainDataTable;
+            }
+
+            this.SetRowCount();
+
+            this.spinningCircles.Visible = false;
+            this.spinningCirclesConnectionPane.Visible = false;
+        }
+
+        private void BackgroundworkerConnectionPaneLoadAll_DoWork(object sender, DoWorkEventArgs e)
+        {
+
+            TreeNode rootnode = null;
+
+            string containername = GetCurrentFolderForLogs();
+
+            rootnode = treeView.Nodes["Connections"].Nodes["StorageAccounts"].Nodes[0].Nodes[0];
+
+            if (rootnode.Nodes.Count == 0)
+            {
+                MessageBox.Show("No loaded nodes.Use the Load option first.");
+                return;
+            }
+
+            string connectionString = saConnectionString[0].ToString();
+
+            // Create a client that can authenticate with a connection string
+            BlobServiceClient blobServiceClient = new BlobServiceClient(connectionString);
+            // Get the container client object
+
+            string containerName = GetCurrentFolderForLogs();
+
+            BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+
+            foreach (TreeNode node in rootnode.Nodes)
+            {
+
+                BlobClient bc = containerClient.GetBlobClient(node.Text);
+
+                if (ClassicLogs)
+                {
+                    var response = bc.DownloadTo(@"c:\temp\tempfile.log");
+
+                    LoadData(new string[] { @"c:\temp\tempfile.log" });
+                }
+                else
+                {
+                    var response = bc.DownloadTo(@"c:\temp\tempfile.json");
+
+                    LoadJSONData(new string[] { @"c:\temp\tempfile.json" });
+                }
+
+
+            }
+            
+        }
+        #endregion
+
+        #region Private aux methods
         private void SetRowCount()
         {
             lblNumberRows.Text = "Number of loaded rows: " + dataGridView.Rows.Count;
@@ -222,6 +297,8 @@ namespace AzureStorageLogReader
         {
             lblNumberRows.Text = "Number of loaded rows: " + mainDataTable.Rows.Count;
         }
+
+        #endregion
 
         #region Load Data
         private void LoadData(string[] files)
@@ -615,6 +692,12 @@ namespace AzureStorageLogReader
                 containername = "insights-logs-storageread";
             return containername;
         }
+
+
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("A GUI Windows application (.Net 4.8 Windows Forms) that allows to read and export the Azure Storage Log files. GitHub repository: https://github.com/nunomo/AzureStorageLogReader");
+        }
         #endregion
 
         #region Treeview Events
@@ -660,7 +743,10 @@ namespace AzureStorageLogReader
                                 ToolStripMenuItem loadLabel = new ToolStripMenuItem();
                                 loadLabel.Text = "Load";
                                 loadLabel.Click += LoadLabel_Click;
-                                logsMenu.Items.AddRange(new ToolStripMenuItem[] { loadLabel });
+                                ToolStripMenuItem sendAlltoTable = new ToolStripMenuItem();
+                                sendAlltoTable.Text = "Send all to table";
+                                sendAlltoTable.Click += SendAlltoTable_Click;
+                                logsMenu.Items.AddRange(new ToolStripMenuItem[] { loadLabel,sendAlltoTable });
                                 tnchild.ContextMenuStrip = logsMenu;
 
                                 treeView.Nodes["Connections"].Nodes["StorageAccounts"].ExpandAll();
@@ -683,6 +769,13 @@ namespace AzureStorageLogReader
             }
         }
 
+        /// <summary>
+        /// Naviages the tree view and loads all the files into the table
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        
+
         private string GetSANameFromCS(string connectionString)
         {
             string[] connSplited = connectionString.Split(';');
@@ -697,6 +790,11 @@ namespace AzureStorageLogReader
             return connectionString;
         }
 
+        /// <summary>
+        /// Load Classic\Preview Storage logs from the $logs\insights container 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void LoadLabel_Click(object sender, EventArgs e)
         {
 
@@ -710,51 +808,86 @@ namespace AzureStorageLogReader
             if (cpf.ShowDialog(this) == DialogResult.OK)
             {
 
-                string filter = cpf.Prefix;
-                int max = cpf.Max;
+                //Load data
 
-                string connectionString = saConnectionString[0].ToString();
-
-                // Create a client that can authenticate with a connection string
-                BlobServiceClient blobServiceClient = new BlobServiceClient(connectionString);
-                // Get the container client object
-
-                string containerName = GetCurrentFolderForLogs();
-
-                BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName);
-
-                TreeNode tn = treeView.Nodes["Connections"].Nodes["StorageAccounts"].Nodes[0].Nodes[0];
-
-                ContextMenuStrip logsMenu = new ContextMenuStrip();
-
-                ToolStripMenuItem loadIntoTable = new ToolStripMenuItem();
-
-                loadIntoTable.Text = "Load into table";
-
-                loadIntoTable.Click += LoadIntoTable_Click;
-
-                logsMenu.Items.AddRange(new ToolStripMenuItem[] { loadIntoTable });
-
-
-                var filterExt = ".log";
-                if (!ClassicLogs) filterExt = ".json";
-                int i = 0;
-                // List all blobs in the container
-                foreach (BlobItem blobItem in containerClient.GetBlobs(BlobTraits.None, BlobStates.None, filter))
-                {
-                    if (blobItem.Name.Contains(filterExt))
-                    {
-                        //Console.WriteLine("\t" + blobItem.Name);
-                        tn.Nodes.Add(blobItem.Name).ContextMenuStrip = logsMenu;
-                        i++;
-                        if (i >= max) break;
-                    }
-                }
-
-                tn.ExpandAll();
+                this.spinningCirclesConnectionPane.Visible = true;
+     
+                backgroundworkerConnectionPane.RunWorkerAsync(new Tuple<string,int>(cpf.Prefix, cpf.Max));
+                
             }
         }
 
+        private void BackgroundworkerConnectionPane_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            this.spinningCirclesConnectionPane.Visible = false;
+            
+        }
+
+        private void BackgroundworkerConnectionPane_DoWork(object sender, DoWorkEventArgs e)
+        {
+            Tuple<string,int> tuple = (Tuple<string, int>)e.Argument;
+            string filter = tuple.Item1;
+            int max = tuple.Item2;
+
+            string connectionString = saConnectionString[0].ToString();
+
+            // Create a client that can authenticate with a connection string
+            BlobServiceClient blobServiceClient = new BlobServiceClient(connectionString);
+            // Get the container client object
+
+            string containerName = GetCurrentFolderForLogs();
+
+            BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+
+            TreeNode tn = treeView.Nodes["Connections"].Nodes["StorageAccounts"].Nodes[0].Nodes[0];
+
+            ContextMenuStrip logsMenu = new ContextMenuStrip();
+
+            ToolStripMenuItem loadIntoTable = new ToolStripMenuItem();
+
+            loadIntoTable.Text = "Send to table";
+
+            loadIntoTable.Click += LoadIntoTable_Click;
+
+            logsMenu.Items.AddRange(new ToolStripMenuItem[] { loadIntoTable });
+
+            
+
+            var filterExt = ".log";
+            if (!ClassicLogs) filterExt = ".json";
+            int i = 0;
+            // List all blobs in the container
+            foreach (BlobItem blobItem in containerClient.GetBlobs(BlobTraits.None, BlobStates.None, filter))
+            {
+                if (blobItem.Name.Contains(filterExt))
+                {
+                    treeView.SafeInvoke(t => tn.Nodes.Add(blobItem.Name).ContextMenuStrip = logsMenu);
+                    //tn.Nodes.Add(blobItem.Name).ContextMenuStrip = logsMenu;
+                    i++;
+                    if (i >= max) break;
+                }
+            }
+
+            treeView.SafeInvoke(t=>tn.ExpandAll());
+
+        }
+
+
+        private void SendAlltoTable_Click(object sender, EventArgs e)
+        {
+            this.spinningCirclesConnectionPane.Visible = true;
+            this.spinningCircles.Visible = true;
+
+            dataGridView.DataSource = null;
+
+            backgroundworkerConnectionPaneLoadAll.RunWorkerAsync();   
+        }
+
+        /// <summary>
+        /// Loads selected node in the tree view to the table
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void LoadIntoTable_Click(object sender, EventArgs e)
         {
 
@@ -796,6 +929,11 @@ namespace AzureStorageLogReader
             this.SetRowCount();
         }
 
+        /// <summary>
+        /// Removes the storage account connection from the treeview
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void RemoveLabel_Click(object sender, EventArgs e)
         {
             saConnectionString.Clear();
@@ -803,9 +941,7 @@ namespace AzureStorageLogReader
         }
         #endregion
 
-        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show("A GUI Windows application (.Net 4.7.2 Windows Forms) that allows to read and export the Azure Storage Log files. GitHub repository: https://github.com/nunomo/AzureStorageLogReader");
-        }
+
+      
     }
 }

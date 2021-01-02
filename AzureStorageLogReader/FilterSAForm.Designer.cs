@@ -68,7 +68,9 @@
             this.cmbMaxBlobs.Items.AddRange(new object[] {
             "10",
             "50",
-            "100"});
+            "100",
+            "1000",
+            "10000"});
             this.cmbMaxBlobs.Location = new System.Drawing.Point(19, 96);
             this.cmbMaxBlobs.Name = "cmbMaxBlobs";
             this.cmbMaxBlobs.Size = new System.Drawing.Size(121, 24);
