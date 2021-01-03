@@ -13,6 +13,8 @@ Now it is also possible to add a connection pane, connect to a SA using the Key 
 
 ![Load logs from SA:](https://github.com/nunomo/AzureStorageLogReader/blob/main/images/version_1_1_loadfromsa.png)
 
+![Send logs to grid:](https://github.com/nunomo/AzureStorageLogReader/blob/main/images/version_1_1_sendtogrid.png)
+
 <b>Version 1.0.0.</b>
 
 The application allows us to read log files appending the data to the table, using the Add Log files button, it is possible to choose multiple files.
