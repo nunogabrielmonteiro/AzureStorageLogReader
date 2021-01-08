@@ -4,6 +4,11 @@
 
 It is a GUI Windows application (.Net 4.8) that allows to read and export the Azure Storage Log files.
 
+<b>Version 1.2.0.</b>
+
+Added support to read logs directly from an Event Hub.
+
+![Load from Event Hub:](https://github.com/nunomo/AzureStorageLogReader/blob/main/images/version_1_2_loadfromeh.png)
 
 <b>Version 1.1.0.</b>
 
