@@ -1,6 +1,8 @@
 # AzureStorageLogReader
 
-It is a GUI Windows application (.Net 4.7.2 Windows Forms) that allows to read and export the Azure Storage Log files.
+[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fnunomo%2FAzureStorageLogReader&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
+
+It is a GUI Windows application (.Net 4.8) that allows to read and export the Azure Storage Log files.
 
 
 <b>Version 1.1.0.</b>
@@ -12,6 +14,8 @@ This version supports the *.log extension (classic) and the JSON format (preview
 Now it is also possible to add a connection pane, connect to a SA using the Key or SAS, and load the logs directly from the selected storage account:
 
 ![Load logs from SA:](https://github.com/nunomo/AzureStorageLogReader/blob/main/images/version_1_1_loadfromsa.png)
+
+![Send logs to grid:](https://github.com/nunomo/AzureStorageLogReader/blob/main/images/version_1_1_sendtogrid.png)
 
 <b>Version 1.0.0.</b>
 
