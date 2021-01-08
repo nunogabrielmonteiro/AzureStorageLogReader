@@ -1,4 +1,5 @@
-﻿using Azure.Storage.Blobs;
+﻿using Azure.Messaging.EventHubs.Consumer;
+using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using ClosedXML.Excel;
 using Newtonsoft.Json.Linq;
@@ -8,7 +9,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 using System.Windows.Forms;
 
@@ -20,13 +24,16 @@ namespace AzureStorageLogReader
     public partial class SALogReaderGui : Form
     {
         #region private fields
+        private string eventHubConnectionString = string.Empty;
+        string eventhubname = string.Empty;
+        string consumergroupname = string.Empty;
         DataTable mainDataTable = new DataTable();
         //Represent the worker thread were all work will be done
         BackgroundWorker backgroundworker = new BackgroundWorker();
         //Represent the worker thread for the connection pane
         BackgroundWorker backgroundworkerConnectionPane = new BackgroundWorker();
-
         BackgroundWorker backgroundworkerConnectionPaneLoadAll = new BackgroundWorker();
+        BackgroundWorker backgroundworkerConnectionPaneEH = new BackgroundWorker();
         //Store the files paths to load in the grid
         string[] filePaths;
         //Map with the grid headers and the status, if they are visible or not
@@ -38,10 +45,8 @@ namespace AzureStorageLogReader
         /// <summary>
         /// Property indicates the current mode of the application (Classic,New)
         /// </summary>
-       
         public bool ClassicLogs
         { get; set; }
-      
         //Connection panel state
         public bool VisiblePane { get; set; }
         #endregion
@@ -74,6 +79,9 @@ namespace AzureStorageLogReader
             backgroundworkerConnectionPaneLoadAll.DoWork += BackgroundworkerConnectionPaneLoadAll_DoWork;
 
             backgroundworkerConnectionPaneLoadAll.RunWorkerCompleted += BackgroundworkerConnectionPaneLoadAll_RunWorkerCompleted;
+
+            backgroundworkerConnectionPaneEH.DoWork += BackgroundworkerConnectionPaneEH_DoWork;
+            backgroundworkerConnectionPaneEH.RunWorkerCompleted += BackgroundworkerConnectionPaneEH_RunWorkerCompleted;
 
             //Wait animation not visible
             spinningCircles.Visible = false;
@@ -194,7 +202,6 @@ namespace AzureStorageLogReader
                 LoadJSONData(filePaths);
             }
         }
-
         private void Backgroundworker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             dataGridView.DataSource = mainDataTable;
@@ -218,7 +225,6 @@ namespace AzureStorageLogReader
             this.spinningCircles.Visible = false;
             this.spinningCirclesConnectionPane.Visible = false;
         }
-
         private void BackgroundworkerConnectionPaneLoadAll_DoWork(object sender, DoWorkEventArgs e)
         {
 
@@ -266,6 +272,147 @@ namespace AzureStorageLogReader
             }
             
         }
+
+        private void BackgroundworkerConnectionPaneEH_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if (dataGridView.DataSource == null)
+            {
+                dataGridView.DataSource = mainDataTable;
+            }
+
+            this.SetRowCount();
+
+            this.spinningCircles.Visible = false;
+            this.spinningCirclesConnectionPane.Visible = false;
+        }
+
+        private void BackgroundworkerConnectionPaneEH_DoWork(object sender, DoWorkEventArgs e)
+        {
+            try
+            {
+
+                Tuple<object,int> tuple = (Tuple<object, int>)e.Argument;
+
+                int max = tuple.Item2;
+                Form main = (Form)tuple.Item1;
+                Task task = DoWorkAndSync(main,max);
+
+                task.Wait();
+
+            }
+            catch(Exception exp)
+            {
+                MessageBox.Show("Error reading the events: "+exp.Message);
+            }
+            
+
+        }
+
+        private async Task DoWorkAndSync(Form main,int max)
+        {
+            try
+            {
+                ReadEventOptions reo = new ReadEventOptions();
+
+                reo.MaximumWaitTime = new TimeSpan(0, 0, 5);
+
+                reo.TrackLastEnqueuedEventProperties = false;
+
+                 await using (var consumer = new EventHubConsumerClient(consumergroupname, eventHubConnectionString, eventhubname))
+                 {
+
+                     using var cancellationSource = new CancellationTokenSource();
+
+                     cancellationSource.CancelAfter(TimeSpan.FromSeconds(120));
+
+                     int i = 0;
+                     await foreach (PartitionEvent receivedEvent in consumer.ReadEventsAsync(true, reo, cancellationSource.Token))
+                     {
+                         if (i >= max) break;
+
+                        if (receivedEvent.Data != null)
+                        {
+
+                            string msg = Encoding.Default.GetString(receivedEvent.Data.Body.ToArray());
+
+                            JObject jo = JObject.Parse(msg);
+
+                            string lastmsg = jo["records"].First.ToString();
+
+                            string cleaned = lastmsg.Replace("\n", "").Replace("\r", "");
+
+                            System.IO.File.WriteAllText(@"c:\temp\tempfile.json", cleaned);
+
+                            LoadJSONData(new string[] { @"c:\temp\tempfile.json" });
+
+                           
+                        } 
+                        
+                        i++;
+                     }
+                 }
+            }
+            catch (Exception exp)
+            {
+                MessageBox.Show(main,"Error reading the events: " + exp.Message);
+            }
+        }
+
+        private void BackgroundworkerConnectionPane_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            this.spinningCirclesConnectionPane.Visible = false;
+
+        }
+
+        private void BackgroundworkerConnectionPane_DoWork(object sender, DoWorkEventArgs e)
+        {
+            Tuple<string, int> tuple = (Tuple<string, int>)e.Argument;
+            string filter = tuple.Item1;
+            int max = tuple.Item2;
+
+            string connectionString = saConnectionString[0].ToString();
+
+            // Create a client that can authenticate with a connection string
+            BlobServiceClient blobServiceClient = new BlobServiceClient(connectionString);
+            // Get the container client object
+
+            string containerName = GetCurrentFolderForLogs();
+
+            BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+
+            TreeNode tn = treeView.Nodes["Connections"].Nodes["StorageAccounts"].Nodes[0].Nodes[0];
+
+            ContextMenuStrip logsMenu = new ContextMenuStrip();
+
+            ToolStripMenuItem loadIntoTable = new ToolStripMenuItem();
+
+            loadIntoTable.Text = "Send to table";
+
+            loadIntoTable.Click += LoadIntoTable_Click;
+
+            logsMenu.Items.AddRange(new ToolStripMenuItem[] { loadIntoTable });
+
+            var filterExt = ".log";
+
+            if (!ClassicLogs) filterExt = ".json";
+
+            int i = 0;
+            // List all blobs in the container
+            foreach (BlobItem blobItem in containerClient.GetBlobs(BlobTraits.None, BlobStates.None, filter))
+            {
+                if (blobItem.Name.Contains(filterExt))
+                {
+                    treeView.SafeInvoke(t => tn.Nodes.Add(blobItem.Name).ContextMenuStrip = logsMenu);
+                    //tn.Nodes.Add(blobItem.Name).ContextMenuStrip = logsMenu;
+                    i++;
+                    if (i >= max) break;
+                }
+            }
+
+            treeView.SafeInvoke(t => tn.ExpandAll());
+
+        }
+
         #endregion
 
         #region Private aux methods
@@ -296,6 +443,16 @@ namespace AzureStorageLogReader
         private void MainDataTable_TableCleared(object sender, DataTableClearEventArgs e)
         {
             lblNumberRows.Text = "Number of loaded rows: " + mainDataTable.Rows.Count;
+        }
+
+        private void RemoveEventHubRootNode()
+        {
+            this.treeView.Nodes[0].Nodes[1].Remove();
+        }
+
+        private void AddEventHubRootNode()
+        {
+            this.treeView.Nodes[0].Nodes.Add("Event Hub");
         }
 
         #endregion
@@ -427,14 +584,14 @@ namespace AzureStorageLogReader
                         string tokenIssuer = jo["identity"]?["requester "]?["tokenIssuer"]?.ToString();
                         string upn = jo["identity"]?["requester "]?["upn"]?.ToString();
                         string userName = jo["identity"]?["requester "]?["userName"]?.ToString();
-                        string location = jo["location"].ToString();
-                        //string properties = jo["properties"].ToString();
-                        string accountName = jo["properties"]["accountName"]?.ToString()??string.Empty;
-                        string requestUrl = jo["properties"]["requestUrl"]?.ToString() ?? string.Empty;
-                        string userAgentHeader = jo["properties"]["userAgentHeader"]?.ToString() ?? string.Empty;
-                        string referrerHeader = jo["properties"]["referrerHeader"]?.ToString() ?? string.Empty;
-                        string clientRequestId = jo["properties"]["clientRequestId"]?.ToString() ?? string.Empty;
-                        string etag = jo["properties"]["etag"]?.ToString() ?? string.Empty;
+                        string location = jo["location"]?.ToString();
+                        //string properties = jo["properties"]?.ToString();
+                        string accountName = jo["properties"]?["accountName"]?.ToString()??string.Empty;
+                        string requestUrl = jo["properties"]?["requestUrl"]?.ToString() ?? string.Empty;
+                        string userAgentHeader = jo["properties"]?["userAgentHeader"]?.ToString() ?? string.Empty;
+                        string referrerHeader = jo["properties"]?["referrerHeader"]?.ToString() ?? string.Empty;
+                        string clientRequestId = jo["properties"]?["clientRequestId"]?.ToString() ?? string.Empty;
+                        string etag = jo["properties"]?["etag"]?.ToString() ?? string.Empty;
                         string serverLatencyMs = jo["properties"]["serverLatencyMs"]?.ToString() ?? "0";
                         string serviceType = jo["properties"]["serviceType"]?.ToString() ?? string.Empty;
                         string operationCount = jo["properties"]["operationCount"]?.ToString() ?? "0";
@@ -621,6 +778,7 @@ namespace AzureStorageLogReader
                         ClassicLogs = true;
                         mainDataTable.Clear();
                         this.RemoveLabel_Click(this.treeView, null);
+                        this.RemoveEventHubRootNode();
                     }
                     else
                     {
@@ -648,7 +806,9 @@ namespace AzureStorageLogReader
                     {
                         ClassicLogs = false;
                         mainDataTable.Clear();
+                        
                         this.RemoveLabel_Click(this.treeView, null);
+                        this.AddEventHubRootNode();
                     }
                     else
                     {
@@ -662,7 +822,7 @@ namespace AzureStorageLogReader
             }
 
         }
-
+     
         private void connectorPaneToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ToolStripMenuItem tsmi = (ToolStripMenuItem)sender;
@@ -693,7 +853,6 @@ namespace AzureStorageLogReader
             return containername;
         }
 
-
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
             MessageBox.Show("A GUI Windows application (.Net 4.8 Windows Forms) that allows to read and export the Azure Storage Log files. GitHub repository: https://github.com/nunomo/AzureStorageLogReader");
@@ -701,7 +860,6 @@ namespace AzureStorageLogReader
         #endregion
 
         #region Treeview Events
-
         private void treeView_DoubleClick(object sender, EventArgs e)
         {
 
@@ -767,14 +925,89 @@ namespace AzureStorageLogReader
                     }
                 }
             }
+
+            if (string.IsNullOrEmpty(eventHubConnectionString))
+            {
+                if (selectedNode.Text == "Event Hub")
+                {
+                    try
+                    {
+                        EHLogin cpf = new EHLogin();
+
+                        if (cpf.ShowDialog(this) == DialogResult.OK)
+                        {
+                            eventHubConnectionString = cpf.ConnectionString;
+                            eventhubname = cpf.EventHubName;
+                            consumergroupname = cpf.ConsumerGroupName;
+                            
+                            if (!string.IsNullOrEmpty(eventHubConnectionString) && !string.IsNullOrEmpty(eventhubname) && !string.IsNullOrEmpty(consumergroupname))
+                            {
+                                
+                                //Create context menu for root node to add the remove option
+                                ContextMenuStrip connectionMenu = new ContextMenuStrip();
+
+                                ToolStripMenuItem RemoveEHLabel = new ToolStripMenuItem();
+                                RemoveEHLabel.Text = "Remove";
+                                RemoveEHLabel.Click += RemoveEHLabel_Click; ;
+                                ToolStripMenuItem LoadEHLabel = new ToolStripMenuItem();
+                                LoadEHLabel.Text = "Load Logs";
+                                LoadEHLabel.Click += LoadEHLabel_Click;
+                                connectionMenu.Items.AddRange(new ToolStripMenuItem[] { RemoveEHLabel,LoadEHLabel });
+                                TreeNode tn = treeView.Nodes["Connections"].Nodes[1].Nodes.Add(GetSANameFromCS(eventhubname));
+                                tn.ContextMenuStrip = connectionMenu;
+
+
+                                treeView.Nodes["Connections"].Nodes[1].ExpandAll();
+                                tn.ExpandAll();
+                                      
+                            }
+                            else
+                            {
+                                MessageBox.Show("Missing mandatory field!");
+                                saConnectionString.Clear();
+                            }
+                        }
+                    }
+                    catch (Exception exp)
+                    {
+                        eventHubConnectionString = string.Empty;
+                        MessageBox.Show(exp.Message);
+                    }
+                }
+            }
         }
 
-        /// <summary>
-        /// Naviages the tree view and loads all the files into the table
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        
+        //Load event hub logs
+        private void LoadEHLabel_Click(object sender, EventArgs e)
+        {
+            //Get Filter parameters
+            FilterEHForm cpf = new FilterEHForm();
+
+            cpf.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+
+            cpf.StartPosition = FormStartPosition.CenterParent;
+
+            if (cpf.ShowDialog(this) == DialogResult.OK)
+            {
+
+                //Load data
+
+                this.spinningCirclesConnectionPane.Visible = true;
+                this.spinningCircles.Visible = true;
+
+                backgroundworkerConnectionPaneEH.RunWorkerAsync(new Tuple<object,int>(this,cpf.Max));
+
+            }
+        }
+
+        //Remove Event hub logs
+        private void RemoveEHLabel_Click(object sender, EventArgs e)
+        {
+            eventHubConnectionString = string.Empty;
+            eventhubname = string.Empty;
+            consumergroupname = string.Empty;
+            treeView.Nodes["Connections"].Nodes[1].Nodes.Clear();
+        }
 
         private string GetSANameFromCS(string connectionString)
         {
@@ -816,63 +1049,7 @@ namespace AzureStorageLogReader
                 
             }
         }
-
-        private void BackgroundworkerConnectionPane_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            this.spinningCirclesConnectionPane.Visible = false;
-            
-        }
-
-        private void BackgroundworkerConnectionPane_DoWork(object sender, DoWorkEventArgs e)
-        {
-            Tuple<string,int> tuple = (Tuple<string, int>)e.Argument;
-            string filter = tuple.Item1;
-            int max = tuple.Item2;
-
-            string connectionString = saConnectionString[0].ToString();
-
-            // Create a client that can authenticate with a connection string
-            BlobServiceClient blobServiceClient = new BlobServiceClient(connectionString);
-            // Get the container client object
-
-            string containerName = GetCurrentFolderForLogs();
-
-            BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName);
-
-            TreeNode tn = treeView.Nodes["Connections"].Nodes["StorageAccounts"].Nodes[0].Nodes[0];
-
-            ContextMenuStrip logsMenu = new ContextMenuStrip();
-
-            ToolStripMenuItem loadIntoTable = new ToolStripMenuItem();
-
-            loadIntoTable.Text = "Send to table";
-
-            loadIntoTable.Click += LoadIntoTable_Click;
-
-            logsMenu.Items.AddRange(new ToolStripMenuItem[] { loadIntoTable });
-
-            
-
-            var filterExt = ".log";
-            if (!ClassicLogs) filterExt = ".json";
-            int i = 0;
-            // List all blobs in the container
-            foreach (BlobItem blobItem in containerClient.GetBlobs(BlobTraits.None, BlobStates.None, filter))
-            {
-                if (blobItem.Name.Contains(filterExt))
-                {
-                    treeView.SafeInvoke(t => tn.Nodes.Add(blobItem.Name).ContextMenuStrip = logsMenu);
-                    //tn.Nodes.Add(blobItem.Name).ContextMenuStrip = logsMenu;
-                    i++;
-                    if (i >= max) break;
-                }
-            }
-
-            treeView.SafeInvoke(t=>tn.ExpandAll());
-
-        }
-
-
+   
         private void SendAlltoTable_Click(object sender, EventArgs e)
         {
             this.spinningCirclesConnectionPane.Visible = true;
