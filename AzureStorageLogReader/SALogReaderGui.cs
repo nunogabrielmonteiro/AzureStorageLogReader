@@ -210,6 +210,7 @@ namespace AzureStorageLogReader
             spinningCircles.Visible = false;
             this.btnAddLogs.Enabled = true;
             this.btbClearTable.Enabled = true;
+            this.btnAddFolder.Enabled = true;
 
             SetVisibleColumns();
 
@@ -421,6 +422,7 @@ namespace AzureStorageLogReader
         private void SetRowCount()
         {
             lblNumberRows.Text = "Number of loaded rows: " + dataGridView.Rows.Count;
+            toolTip1.SetToolTip(lblNumberRows, dataGridView.Rows.Count.ToString());
         }
 
         private void SetVisibleColumns()
@@ -664,6 +666,7 @@ namespace AzureStorageLogReader
                     this.dataGridView.DataSource = null;
                     spinningCircles.Visible = true;
                     this.btnAddLogs.Enabled = false;
+                    this.btnAddFolder.Enabled = false;
                     this.btbClearTable.Enabled = false;
                     backgroundworker.RunWorkerAsync();
 
@@ -1148,6 +1151,7 @@ namespace AzureStorageLogReader
                         spinningCircles.Visible = true;
                         this.btnAddLogs.Enabled = false;
                         this.btbClearTable.Enabled = false;
+                        this.btnAddFolder.Enabled = false;
                         backgroundworker.RunWorkerAsync();
 
                     }

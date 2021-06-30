@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("Storage Accounts");
             System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("Connections", new System.Windows.Forms.TreeNode[] {
             treeNode1});
@@ -40,7 +41,6 @@
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panelLeft = new System.Windows.Forms.Panel();
-            this.spinningCirclesConnectionPane = new AzureStorageLogReader.SpinningCircles();
             this.treeView = new System.Windows.Forms.TreeView();
             this.panelMain = new System.Windows.Forms.Panel();
             this.rbtnClassic = new System.Windows.Forms.RadioButton();
@@ -52,13 +52,15 @@
             this.txtFilter = new System.Windows.Forms.TextBox();
             this.lblFilter = new System.Windows.Forms.Label();
             this.btnChooseColumns = new System.Windows.Forms.Button();
-            this.spinningCircles = new AzureStorageLogReader.SpinningCircles();
             this.btbClearTable = new System.Windows.Forms.Button();
             this.lblNumberRows = new System.Windows.Forms.Label();
             this.dataGridView = new System.Windows.Forms.DataGridView();
             this.btnAddLogs = new System.Windows.Forms.Button();
             this.btnAddFolder = new System.Windows.Forms.Button();
             this.openFileDialogJson = new System.Windows.Forms.OpenFileDialog();
+            this.spinningCircles = new AzureStorageLogReader.SpinningCircles();
+            this.spinningCirclesConnectionPane = new AzureStorageLogReader.SpinningCircles();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.menuStrip1.SuspendLayout();
             this.panelLeft.SuspendLayout();
             this.panelMain.SuspendLayout();
@@ -96,7 +98,7 @@
             // connectorPaneToolStripMenuItem
             // 
             this.connectorPaneToolStripMenuItem.Name = "connectorPaneToolStripMenuItem";
-            this.connectorPaneToolStripMenuItem.Size = new System.Drawing.Size(195, 26);
+            this.connectorPaneToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.connectorPaneToolStripMenuItem.Text = "Connector Pane";
             this.connectorPaneToolStripMenuItem.Click += new System.EventHandler(this.connectorPaneToolStripMenuItem_Click);
             // 
@@ -124,16 +126,6 @@
             this.panelLeft.Name = "panelLeft";
             this.panelLeft.Size = new System.Drawing.Size(420, 608);
             this.panelLeft.TabIndex = 15;
-            // 
-            // spinningCirclesConnectionPane
-            // 
-            this.spinningCirclesConnectionPane.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.spinningCirclesConnectionPane.BackColor = System.Drawing.Color.Transparent;
-            this.spinningCirclesConnectionPane.Location = new System.Drawing.Point(155, 255);
-            this.spinningCirclesConnectionPane.Name = "spinningCirclesConnectionPane";
-            this.spinningCirclesConnectionPane.Size = new System.Drawing.Size(90, 90);
-            this.spinningCirclesConnectionPane.TabIndex = 19;
-            this.spinningCirclesConnectionPane.Text = "spinningCircles1";
             // 
             // treeView
             // 
@@ -223,16 +215,15 @@
             // 
             this.cmbColumns.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbColumns.FormattingEnabled = true;
-            this.cmbColumns.Location = new System.Drawing.Point(264, 42);
+            this.cmbColumns.Location = new System.Drawing.Point(315, 42);
             this.cmbColumns.Name = "cmbColumns";
-            this.cmbColumns.Size = new System.Drawing.Size(187, 24);
+            this.cmbColumns.Size = new System.Drawing.Size(183, 24);
             this.cmbColumns.TabIndex = 23;
-            this.cmbColumns.SelectedIndexChanged += cmbColumns_SelectedIndexChanged;
             // 
             // btnFilter
             // 
             this.btnFilter.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnFilter.Location = new System.Drawing.Point(515, 41);
+            this.btnFilter.Location = new System.Drawing.Point(516, 41);
             this.btnFilter.Name = "btnFilter";
             this.btnFilter.Size = new System.Drawing.Size(62, 28);
             this.btnFilter.TabIndex = 22;
@@ -245,15 +236,15 @@
             this.txtFilter.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtFilter.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.1F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtFilter.Location = new System.Drawing.Point(456, 42);
+            this.txtFilter.Location = new System.Drawing.Point(503, 42);
             this.txtFilter.Name = "txtFilter";
-            this.txtFilter.Size = new System.Drawing.Size(56, 25);
+            this.txtFilter.Size = new System.Drawing.Size(10, 25);
             this.txtFilter.TabIndex = 21;
             // 
             // lblFilter
             // 
             this.lblFilter.AutoSize = true;
-            this.lblFilter.Location = new System.Drawing.Point(219, 48);
+            this.lblFilter.Location = new System.Drawing.Point(274, 48);
             this.lblFilter.Name = "lblFilter";
             this.lblFilter.Size = new System.Drawing.Size(43, 17);
             this.lblFilter.TabIndex = 20;
@@ -269,16 +260,6 @@
             this.btnChooseColumns.Text = "Choose Columns";
             this.btnChooseColumns.UseVisualStyleBackColor = true;
             this.btnChooseColumns.Click += new System.EventHandler(this.btnChooseColumns_Click);
-            // 
-            // spinningCircles
-            // 
-            this.spinningCircles.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.spinningCircles.BackColor = System.Drawing.Color.Transparent;
-            this.spinningCircles.Location = new System.Drawing.Point(282, 255);
-            this.spinningCircles.Name = "spinningCircles";
-            this.spinningCircles.Size = new System.Drawing.Size(90, 90);
-            this.spinningCircles.TabIndex = 18;
-            this.spinningCircles.Text = "spinningCircles1";
             // 
             // btbClearTable
             // 
@@ -296,9 +277,9 @@
             this.lblNumberRows.AutoSize = true;
             this.lblNumberRows.Location = new System.Drawing.Point(15, 49);
             this.lblNumberRows.Name = "lblNumberRows";
-            this.lblNumberRows.Size = new System.Drawing.Size(170, 17);
+            this.lblNumberRows.Size = new System.Drawing.Size(135, 17);
             this.lblNumberRows.TabIndex = 16;
-            this.lblNumberRows.Text = "Number of loaded rows: 0";
+            this.lblNumberRows.Text = "Nr of loaded rows: 0";
             // 
             // dataGridView
             // 
@@ -323,19 +304,17 @@
             this.btnAddLogs.Text = "Add Log files";
             this.btnAddLogs.UseVisualStyleBackColor = true;
             this.btnAddLogs.Click += new System.EventHandler(this.btnAddLogs_Click);
-
             // 
             // btnAddFolder
             // 
             this.btnAddFolder.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnAddFolder.Location = new System.Drawing.Point(480, 566);
-            this.btnAddFolder.Name = "btnAddLogs";
+            this.btnAddFolder.Name = "btnAddFolder";
             this.btnAddFolder.Size = new System.Drawing.Size(152, 34);
             this.btnAddFolder.TabIndex = 14;
             this.btnAddFolder.Text = "Add Log Folder";
             this.btnAddFolder.UseVisualStyleBackColor = true;
             this.btnAddFolder.Click += new System.EventHandler(this.AddFolder_Click);
-
             // 
             // openFileDialogJson
             // 
@@ -344,6 +323,26 @@
             this.openFileDialogJson.Multiselect = true;
             this.openFileDialogJson.RestoreDirectory = true;
             this.openFileDialogJson.SupportMultiDottedExtensions = true;
+            // 
+            // spinningCircles
+            // 
+            this.spinningCircles.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.spinningCircles.BackColor = System.Drawing.Color.Transparent;
+            this.spinningCircles.Location = new System.Drawing.Point(282, 255);
+            this.spinningCircles.Name = "spinningCircles";
+            this.spinningCircles.Size = new System.Drawing.Size(90, 90);
+            this.spinningCircles.TabIndex = 18;
+            this.spinningCircles.Text = "spinningCircles1";
+            // 
+            // spinningCirclesConnectionPane
+            // 
+            this.spinningCirclesConnectionPane.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.spinningCirclesConnectionPane.BackColor = System.Drawing.Color.Transparent;
+            this.spinningCirclesConnectionPane.Location = new System.Drawing.Point(155, 255);
+            this.spinningCirclesConnectionPane.Name = "spinningCirclesConnectionPane";
+            this.spinningCirclesConnectionPane.Size = new System.Drawing.Size(90, 90);
+            this.spinningCirclesConnectionPane.TabIndex = 19;
+            this.spinningCirclesConnectionPane.Text = "spinningCircles1";
             // 
             // SALogReaderGui
             // 
@@ -396,6 +395,7 @@
         private System.Windows.Forms.TreeView treeView;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
         private SpinningCircles spinningCirclesConnectionPane;
+        private System.Windows.Forms.ToolTip toolTip1;
     }
 }
 
