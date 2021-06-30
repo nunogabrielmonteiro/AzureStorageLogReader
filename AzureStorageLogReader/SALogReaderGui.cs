@@ -96,7 +96,8 @@ namespace AzureStorageLogReader
             VisiblePane = false;
             //Hide Connector Pane
             this.panelLeft.Visible = false;
-
+            //Combobox filter change index event
+            this.cmbColumns.SelectedIndexChanged += cmbColumns_SelectedIndexChanged;
         }
 
         #region Initialization Methods
