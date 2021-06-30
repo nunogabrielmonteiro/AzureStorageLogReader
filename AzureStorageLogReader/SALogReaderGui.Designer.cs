@@ -57,6 +57,7 @@
             this.lblNumberRows = new System.Windows.Forms.Label();
             this.dataGridView = new System.Windows.Forms.DataGridView();
             this.btnAddLogs = new System.Windows.Forms.Button();
+            this.btnAddFolder = new System.Windows.Forms.Button();
             this.openFileDialogJson = new System.Windows.Forms.OpenFileDialog();
             this.menuStrip1.SuspendLayout();
             this.panelLeft.SuspendLayout();
@@ -165,6 +166,7 @@
             this.panelMain.Controls.Add(this.lblNumberRows);
             this.panelMain.Controls.Add(this.dataGridView);
             this.panelMain.Controls.Add(this.btnAddLogs);
+            this.panelMain.Controls.Add(this.btnAddFolder);
             this.panelMain.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelMain.Location = new System.Drawing.Point(420, 28);
             this.panelMain.Name = "panelMain";
@@ -198,7 +200,7 @@
             // bntExporToExcel
             // 
             this.bntExporToExcel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.bntExporToExcel.Location = new System.Drawing.Point(19, 566);
+            this.bntExporToExcel.Location = new System.Drawing.Point(-135, 566);
             this.bntExporToExcel.Name = "bntExporToExcel";
             this.bntExporToExcel.Size = new System.Drawing.Size(150, 34);
             this.bntExporToExcel.TabIndex = 25;
@@ -225,6 +227,7 @@
             this.cmbColumns.Name = "cmbColumns";
             this.cmbColumns.Size = new System.Drawing.Size(187, 24);
             this.cmbColumns.TabIndex = 23;
+            this.cmbColumns.SelectedIndexChanged += cmbColumns_SelectedIndexChanged;
             // 
             // btnFilter
             // 
@@ -259,7 +262,7 @@
             // btnChooseColumns
             // 
             this.btnChooseColumns.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnChooseColumns.Location = new System.Drawing.Point(172, 566);
+            this.btnChooseColumns.Location = new System.Drawing.Point(19, 566);
             this.btnChooseColumns.Name = "btnChooseColumns";
             this.btnChooseColumns.Size = new System.Drawing.Size(150, 34);
             this.btnChooseColumns.TabIndex = 19;
@@ -280,7 +283,7 @@
             // btbClearTable
             // 
             this.btbClearTable.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btbClearTable.Location = new System.Drawing.Point(326, 566);
+            this.btbClearTable.Location = new System.Drawing.Point(172, 566);
             this.btbClearTable.Name = "btbClearTable";
             this.btbClearTable.Size = new System.Drawing.Size(150, 34);
             this.btbClearTable.TabIndex = 17;
@@ -313,13 +316,26 @@
             // btnAddLogs
             // 
             this.btnAddLogs.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnAddLogs.Location = new System.Drawing.Point(480, 566);
+            this.btnAddLogs.Location = new System.Drawing.Point(326, 566);
             this.btnAddLogs.Name = "btnAddLogs";
             this.btnAddLogs.Size = new System.Drawing.Size(152, 34);
             this.btnAddLogs.TabIndex = 14;
             this.btnAddLogs.Text = "Add Log files";
             this.btnAddLogs.UseVisualStyleBackColor = true;
             this.btnAddLogs.Click += new System.EventHandler(this.btnAddLogs_Click);
+
+            // 
+            // btnAddFolder
+            // 
+            this.btnAddFolder.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnAddFolder.Location = new System.Drawing.Point(480, 566);
+            this.btnAddFolder.Name = "btnAddLogs";
+            this.btnAddFolder.Size = new System.Drawing.Size(152, 34);
+            this.btnAddFolder.TabIndex = 14;
+            this.btnAddFolder.Text = "Add Log Folder";
+            this.btnAddFolder.UseVisualStyleBackColor = true;
+            this.btnAddFolder.Click += new System.EventHandler(this.AddFolder_Click);
+
             // 
             // openFileDialogJson
             // 
@@ -374,6 +390,7 @@
         private System.Windows.Forms.Label lblNumberRows;
         private System.Windows.Forms.DataGridView dataGridView;
         private System.Windows.Forms.Button btnAddLogs;
+        private System.Windows.Forms.Button btnAddFolder;
         private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
         private System.Windows.Forms.OpenFileDialog openFileDialogJson;
         private System.Windows.Forms.TreeView treeView;

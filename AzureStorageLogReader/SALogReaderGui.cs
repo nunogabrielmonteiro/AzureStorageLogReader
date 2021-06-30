@@ -68,6 +68,8 @@ namespace AzureStorageLogReader
                 cmbColumns.Items.Add(col.Key);
             }
 
+            cmbColumns.Items.Add("Manual");
+
             backgroundworker.DoWork += Backgroundworker_DoWork;
 
             backgroundworker.RunWorkerCompleted += Backgroundworker_RunWorkerCompleted;
@@ -487,11 +489,9 @@ namespace AzureStorageLogReader
 
                         dr.ItemArray = rowValues;
 
-                        mainDataTable.Rows.Add(dr);
+                        mainDataTable.Rows.Add(dr);                        
                     }
-
                 }
-
             }
             catch (Exception exp)
             {
@@ -657,7 +657,7 @@ namespace AzureStorageLogReader
                 filePaths = openFileDialogJson.FileNames;
             }
 
-            if (result == DialogResult.OK) 
+            if (result == DialogResult.OK)
             {
                 try
                 {
@@ -672,7 +672,7 @@ namespace AzureStorageLogReader
                 {
                     MessageBox.Show(ioexp.Message);
                 }
-            }   
+            }
         }
 
         private void btbClearTable_Click(object sender, EventArgs e)
@@ -715,7 +715,13 @@ namespace AzureStorageLogReader
                             string colname = cmbColumns.SelectedItem.ToString();
                             //Apply Filter
                             DataView dv;
-                            string filter = "["+colname + "] like '%" + this.txtFilter.Text + "%'";
+                            string filter = string.Empty;
+
+                            if (colname.Equals("Manual", StringComparison.InvariantCultureIgnoreCase))
+                                filter = this.txtFilter.Text;
+                            else
+                                filter = "[" + colname + "] like '%" + this.txtFilter.Text + "%'";
+                            
                             dv = new DataView(mainDataTable, filter, "RequestStartTime Desc", DataViewRowState.CurrentRows);
                             dataGridView.DataSource = dv;
                         }
@@ -1116,9 +1122,53 @@ namespace AzureStorageLogReader
             saConnectionString.Clear();
             treeView.Nodes["Connections"].Nodes["StorageAccounts"].Nodes.Clear();
         }
+
+
         #endregion
 
+        private void AddFolder_Click(object sender, EventArgs e)
+        {
+            if (this.ClassicLogs)
+            {
+                openFileDialog.ValidateNames = false;
+                openFileDialog.CheckFileExists = false;
+                openFileDialog.CheckPathExists = true;
 
-      
+                openFileDialog.FileName = "Folder Selection.";
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        string folderPath = Path.GetDirectoryName(openFileDialog.FileName);
+
+                        filePaths = Directory.GetFiles(folderPath, "*.*", SearchOption.AllDirectories);
+
+                        this.dataGridView.DataSource = null;
+                        spinningCircles.Visible = true;
+                        this.btnAddLogs.Enabled = false;
+                        this.btbClearTable.Enabled = false;
+                        backgroundworker.RunWorkerAsync();
+
+                    }
+                    catch (IOException ioexp)
+                    {
+                        MessageBox.Show(ioexp.Message);
+                    }
+                }
+
+                return;
+            }
+        }
+
+        private void cmbColumns_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (this.cmbColumns.SelectedItem.ToString().Equals("Manual", StringComparison.InvariantCultureIgnoreCase))
+            {
+                this.txtFilter.Text = "[Column1] like '%value1%' and [Column2] like '%value2%'";
+            }
+            else
+                this.txtFilter.Text = "";
+        }
     }
 }
