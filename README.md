@@ -4,6 +4,18 @@
 
 It is a GUI Windows application (.Net 4.8) that allows to read and export the Azure Storage Log files.  <a href="https://nunogabrielmonteiro.github.io/AzureStorageLogReader/">(Check the Website)</a>
 
+<b>Version 1.3.0.</b>
+
+Updates:
+
+Compiled to run as a 64 bits Application to have more memory addressing space, preventing getting OOM exceptions when loading big logs.
+
+New button to load log files from a folder recursively.
+
+New filter option that allows custom filters:
+
+![Exampple:](https://user-images.githubusercontent.com/31699556/124012160-bf43ff80-d9d8-11eb-9b56-bc697a755b79.png)
+
 <b>Version 1.2.0.</b>
 
 Added support to read logs directly from an Event Hub.
