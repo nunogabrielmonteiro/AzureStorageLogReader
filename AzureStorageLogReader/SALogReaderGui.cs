@@ -39,6 +39,10 @@ namespace AzureStorageLogReader
         //Map with the grid headers and the status, if they are visible or not
         Dictionary<string, bool> tableHeaderNames = new Dictionary<string, bool>();
         private ArrayList saConnectionString = new ArrayList();
+        public int containerIndex = 0;
+        public bool isRefreshed = false;
+        public string currentStorageAccountName = string.Empty;
+
         #endregion
 
         #region Properties
@@ -274,7 +278,7 @@ namespace AzureStorageLogReader
 
 
             }
-            
+
         }
 
         private void BackgroundworkerConnectionPaneEH_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -295,24 +299,24 @@ namespace AzureStorageLogReader
             try
             {
 
-                Tuple<object,int> tuple = (Tuple<object, int>)e.Argument;
+                Tuple<object, int> tuple = (Tuple<object, int>)e.Argument;
 
                 int max = tuple.Item2;
                 Form main = (Form)tuple.Item1;
-                Task task = DoWorkAndSync(main,max);
+                Task task = DoWorkAndSync(main, max);
 
                 task.Wait();
 
             }
-            catch(Exception exp)
+            catch (Exception exp)
             {
-                MessageBox.Show("Error reading the events: "+exp.Message);
+                MessageBox.Show("Error reading the events: " + exp.Message);
             }
-            
+
 
         }
 
-        private async Task DoWorkAndSync(Form main,int max)
+        private async Task DoWorkAndSync(Form main, int max)
         {
             try
             {
@@ -322,17 +326,17 @@ namespace AzureStorageLogReader
 
                 reo.TrackLastEnqueuedEventProperties = false;
 
-                 await using (var consumer = new EventHubConsumerClient(consumergroupname, eventHubConnectionString, eventhubname))
-                 {
+                await using (var consumer = new EventHubConsumerClient(consumergroupname, eventHubConnectionString, eventhubname))
+                {
 
-                     using var cancellationSource = new CancellationTokenSource();
+                    using var cancellationSource = new CancellationTokenSource();
 
-                     cancellationSource.CancelAfter(TimeSpan.FromSeconds(120));
+                    cancellationSource.CancelAfter(TimeSpan.FromSeconds(120));
 
-                     int i = 0;
-                     await foreach (PartitionEvent receivedEvent in consumer.ReadEventsAsync(true, reo, cancellationSource.Token))
-                     {
-                         if (i >= max) break;
+                    int i = 0;
+                    await foreach (PartitionEvent receivedEvent in consumer.ReadEventsAsync(true, reo, cancellationSource.Token))
+                    {
+                        if (i >= max) break;
 
                         if (receivedEvent.Data != null)
                         {
@@ -349,16 +353,16 @@ namespace AzureStorageLogReader
 
                             LoadJSONData(new string[] { @"c:\temp\tempfile.json" });
 
-                           
-                        } 
-                        
+
+                        }
+
                         i++;
-                     }
-                 }
+                    }
+                }
             }
             catch (Exception exp)
             {
-                MessageBox.Show(main,"Error reading the events: " + exp.Message);
+                MessageBox.Show(main, "Error reading the events: " + exp.Message);
             }
         }
 
@@ -384,6 +388,7 @@ namespace AzureStorageLogReader
 
             BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName);
 
+            //TreeNode tn = treeView.Nodes["Connections"].Nodes["StorageAccounts"].Nodes[0].Nodes[containerIndex];
             TreeNode tn = treeView.Nodes["Connections"].Nodes["StorageAccounts"].Nodes[0].Nodes[0];
 
             ContextMenuStrip logsMenu = new ContextMenuStrip();
@@ -428,7 +433,8 @@ namespace AzureStorageLogReader
 
         private void SetVisibleColumns()
         {
-            try { 
+            try
+            {
                 if (dataGridView.Columns.Count > 0)
                 {
                     foreach (var col in tableHeaderNames)
@@ -492,7 +498,7 @@ namespace AzureStorageLogReader
 
                         dr.ItemArray = rowValues;
 
-                        mainDataTable.Rows.Add(dr);                        
+                        mainDataTable.Rows.Add(dr);
                     }
                 }
             }
@@ -589,7 +595,7 @@ namespace AzureStorageLogReader
                         string userName = jo["identity"]?["requester "]?["userName"]?.ToString();
                         string location = jo["location"]?.ToString();
                         //string properties = jo["properties"]?.ToString();
-                        string accountName = jo["properties"]?["accountName"]?.ToString()??string.Empty;
+                        string accountName = jo["properties"]?["accountName"]?.ToString() ?? string.Empty;
                         string requestUrl = jo["properties"]?["requestUrl"]?.ToString() ?? string.Empty;
                         string userAgentHeader = jo["properties"]?["userAgentHeader"]?.ToString() ?? string.Empty;
                         string referrerHeader = jo["properties"]?["referrerHeader"]?.ToString() ?? string.Empty;
@@ -625,7 +631,7 @@ namespace AzureStorageLogReader
                         string[] rowValues = { schemaVersion,time,operationName, "RequestStatus", statusCode, "0",serverLatencyMs, identitytype,accountName, "OwnerAccountName", serviceType,requestUrl, "RequestObjectKey",clientRequestId,operationCount, callerIpAddress,operationName,requestHeaderSize,requestBodySize,responseHeaderSize,responseBodySize,
                         "0", requestMd5, serverMd5, etag, lastModifiedTime,conditionsUsed, userAgentHeader
                         ,referrerHeader,clientRequestId,objectId,tenantId,appID,resourceId,tokenIssuer,upn,userName,audience,"","",""};
-      
+
                         DataRow dr = mainDataTable.NewRow();
 
                         dr.ItemArray = rowValues;
@@ -686,7 +692,8 @@ namespace AzureStorageLogReader
 
         private void btnChooseColumns_Click(object sender, EventArgs e)
         {
-            try { 
+            try
+            {
 
                 ColumnsPickerForm cpf = new ColumnsPickerForm(this.tableHeaderNames);
                 cpf.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
@@ -703,7 +710,8 @@ namespace AzureStorageLogReader
 
         private void btnFilter_Click(object sender, EventArgs e)
         {
-            try { 
+            try
+            {
                 if (mainDataTable.Columns.Count > 0)
                 {
 
@@ -725,7 +733,7 @@ namespace AzureStorageLogReader
                                 filter = this.txtFilter.Text;
                             else
                                 filter = "[" + colname + "] like '%" + this.txtFilter.Text + "%'";
-                            
+
                             dv = new DataView(mainDataTable, filter, "RequestStartTime Desc", DataViewRowState.CurrentRows);
                             dataGridView.DataSource = dv;
                         }
@@ -750,7 +758,7 @@ namespace AzureStorageLogReader
                 this.dataGridView.DataSource = mainDataTable;
                 SetRowCount();
             }
-            catch(Exception exp)
+            catch (Exception exp)
             {
                 MessageBox.Show(exp.Message);
             }
@@ -788,6 +796,7 @@ namespace AzureStorageLogReader
                         ClassicLogs = true;
                         mainDataTable.Clear();
                         this.RemoveLabel_Click(this.treeView, null);
+                        this.RefreshLabel_Click(this.treeView, null);
                         this.RemoveEventHubRootNode();
                     }
                     else
@@ -799,7 +808,7 @@ namespace AzureStorageLogReader
                     }
                 }
 
-                
+
             }
 
         }
@@ -816,8 +825,9 @@ namespace AzureStorageLogReader
                     {
                         ClassicLogs = false;
                         mainDataTable.Clear();
-                        
+
                         this.RemoveLabel_Click(this.treeView, null);
+                        this.RefreshLabel_Click(this.treeView, null);
                         this.AddEventHubRootNode();
                     }
                     else
@@ -828,11 +838,11 @@ namespace AzureStorageLogReader
                         return;
                     }
                 }
-                
+
             }
 
         }
-     
+
         private void connectorPaneToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ToolStripMenuItem tsmi = (ToolStripMenuItem)sender;
@@ -857,9 +867,22 @@ namespace AzureStorageLogReader
         {
             string containername = string.Empty;
             if (ClassicLogs)
-                containername = "$logs"; 
+                containername = "$logs";
             else
-                containername = "insights-logs-storageread";
+            {
+                if (containerIndex == 0)
+                {
+                    containername = "insights-logs-storageread";
+                }
+                else if (containerIndex == 1)
+                {
+                    containername = "insights-logs-storagewrite";
+                }
+                else if (containerIndex == 2)
+                {
+                    containername = "insights-logs-storagedelete";
+                }
+            }
             return containername;
         }
 
@@ -875,6 +898,11 @@ namespace AzureStorageLogReader
 
             TreeNode selectedNode = this.treeView.SelectedNode;
 
+            if (isRefreshed == true)
+            {
+                RefreshContent();
+            }
+
             if (saConnectionString.Count == 0)
             {
                 if (selectedNode.Name == "StorageAccounts")
@@ -885,47 +913,7 @@ namespace AzureStorageLogReader
 
                         if (cpf.ShowDialog(this) == DialogResult.OK)
                         {
-                            string connectionString = saConnectionString[0].ToString();
-
-                            BlobServiceClient blobServiceClient = new BlobServiceClient(connectionString);
-
-                            //insights-logs-storageread
-                            string containerName = GetCurrentFolderForLogs();
-
-                            BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName);
-
-                            if (containerClient.Exists())
-                            {
-                                //Create context menu for root node to add the remove option
-                                ContextMenuStrip connectionMenu = new ContextMenuStrip();
-                                ToolStripMenuItem removeLabel = new ToolStripMenuItem();
-                                removeLabel.Text = "Remove";
-                                removeLabel.Click += RemoveLabel_Click;
-                                connectionMenu.Items.AddRange(new ToolStripMenuItem[] { removeLabel });
-                                TreeNode tn = treeView.Nodes["Connections"].Nodes["StorageAccounts"].Nodes.Add(GetSANameFromCS(connectionString));
-                                tn.ContextMenuStrip = connectionMenu;
-
-                                //Create $logs container tree node
-                                TreeNode tnchild = tn.Nodes.Add(containerClient.Name);
-                                ContextMenuStrip logsMenu = new ContextMenuStrip();
-                                ToolStripMenuItem loadLabel = new ToolStripMenuItem();
-                                loadLabel.Text = "Load";
-                                loadLabel.Click += LoadLabel_Click;
-                                ToolStripMenuItem sendAlltoTable = new ToolStripMenuItem();
-                                sendAlltoTable.Text = "Send all to table";
-                                sendAlltoTable.Click += SendAlltoTable_Click;
-                                logsMenu.Items.AddRange(new ToolStripMenuItem[] { loadLabel,sendAlltoTable });
-                                tnchild.ContextMenuStrip = logsMenu;
-
-                                treeView.Nodes["Connections"].Nodes["StorageAccounts"].ExpandAll();
-                                //tn.ExpandAll();
-                          
-                            }
-                            else
-                            {
-                                MessageBox.Show(containerName+" container not found!");
-                                saConnectionString.Clear();
-                            }
+                            GetGridViewForSA(false);
                         }
                     }
                     catch (Exception exp)
@@ -949,10 +937,10 @@ namespace AzureStorageLogReader
                             eventHubConnectionString = cpf.ConnectionString;
                             eventhubname = cpf.EventHubName;
                             consumergroupname = cpf.ConsumerGroupName;
-                            
+
                             if (!string.IsNullOrEmpty(eventHubConnectionString) && !string.IsNullOrEmpty(eventhubname) && !string.IsNullOrEmpty(consumergroupname))
                             {
-                                
+
                                 //Create context menu for root node to add the remove option
                                 ContextMenuStrip connectionMenu = new ContextMenuStrip();
 
@@ -962,14 +950,14 @@ namespace AzureStorageLogReader
                                 ToolStripMenuItem LoadEHLabel = new ToolStripMenuItem();
                                 LoadEHLabel.Text = "Load Logs";
                                 LoadEHLabel.Click += LoadEHLabel_Click;
-                                connectionMenu.Items.AddRange(new ToolStripMenuItem[] { RemoveEHLabel,LoadEHLabel });
+                                connectionMenu.Items.AddRange(new ToolStripMenuItem[] { RemoveEHLabel, LoadEHLabel });
                                 TreeNode tn = treeView.Nodes["Connections"].Nodes[1].Nodes.Add(GetSANameFromCS(eventhubname));
                                 tn.ContextMenuStrip = connectionMenu;
 
 
                                 treeView.Nodes["Connections"].Nodes[1].ExpandAll();
                                 tn.ExpandAll();
-                                      
+
                             }
                             else
                             {
@@ -984,6 +972,141 @@ namespace AzureStorageLogReader
                         MessageBox.Show(exp.Message);
                     }
                 }
+            }
+        }
+
+        private void RefreshContent()
+        {
+            isRefreshed = false;
+            bool reload = true;
+            GetGridViewForSA(reload);
+        }
+
+        private void GetGridViewForSA(bool reload)
+        {
+            string connectionString = saConnectionString[0].ToString();
+
+            BlobServiceClient blobServiceClient = new BlobServiceClient(connectionString);
+
+            //insights-logs-storageread
+            string containerName = GetCurrentFolderForLogs();
+
+            BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+
+            BlobContainerClient containerClientWrite = blobServiceClient.GetBlobContainerClient("insights-logs-storagewrite");
+            BlobContainerClient containerClientDelete = blobServiceClient.GetBlobContainerClient("insights-logs-storagedelete");
+
+            //Create context menu for root node to add the remove option
+            ContextMenuStrip contextMenu = new ContextMenuStrip();
+            ToolStripMenuItem removeLabel = new ToolStripMenuItem();
+            removeLabel.Text = "Remove";
+            removeLabel.Click += RemoveLabel_Click;
+            contextMenu.Items.AddRange(new ToolStripMenuItem[] { removeLabel });
+
+            if (!ClassicLogs)
+            {
+                //Add the refresh option at root node
+                ToolStripMenuItem refreshLabel = new ToolStripMenuItem();
+                refreshLabel.Text = "Refresh";
+                refreshLabel.Click += RefreshLabel_Click;
+                contextMenu.Items.AddRange(new ToolStripMenuItem[] { refreshLabel });
+            }
+
+            TreeNode tn = null;
+            if (reload)
+            {
+                tn = treeView.Nodes["Connections"].Nodes["StorageAccounts"].Nodes[0];
+            }
+            else
+            {
+                tn = treeView.Nodes["Connections"].Nodes["StorageAccounts"].Nodes.Add(GetSANameFromCS(connectionString));
+            }
+            //currentStorageAccountName
+            tn.ContextMenuStrip = contextMenu;
+
+            ContextMenuStrip logsMenu = new ContextMenuStrip();
+            ToolStripMenuItem loadLabel = new ToolStripMenuItem();
+            loadLabel.Text = "Load";
+            loadLabel.Click += LoadLabel_Click;
+            ToolStripMenuItem sendAlltoTable = new ToolStripMenuItem();
+            sendAlltoTable.Text = "Send all to table";
+            sendAlltoTable.Click += SendAlltoTable_Click;
+            logsMenu.Items.AddRange(new ToolStripMenuItem[] { loadLabel, sendAlltoTable });
+
+            bool storageRead = false;
+            bool storageWrite = false;
+            bool storageDelete = false;
+
+            if (containerClient.Exists())
+            {
+                storageRead = true;
+            }
+            if (containerClientWrite.Exists())
+            {
+                storageWrite = true;
+            }
+            if (containerClientDelete.Exists())
+            {
+                storageDelete = true;
+            }
+
+            if (!ClassicLogs && (containerClient.Exists() || containerClientWrite.Exists() || containerClientDelete.Exists()))
+            {
+                //tn.ExpandAll();
+                ChooseForm chForm = new ChooseForm();
+                chForm.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+
+                //storageWrite = false;
+                //storageDelete = true;
+
+                if (storageRead)
+                {
+                    chForm.Controls.Find("radioButton1", true)[0].Enabled = true;
+                }
+                if (storageWrite)
+                {
+                    chForm.Controls.Find("radioButton2", true)[0].Enabled = true;
+                }
+                if (storageDelete)
+                {
+                    chForm.Controls.Find("radioButton3", true)[0].Enabled = true;
+                }
+
+                chForm.StartPosition = FormStartPosition.CenterParent;
+
+                if (chForm.ShowDialog(this) == DialogResult.OK)
+                {
+                    containerIndex = chForm.mySelectedIndex;
+
+                    if (containerIndex == 0)
+                    {
+                        TreeNode tnchild = tn.Nodes.Add(containerClient.Name);
+                        tnchild.ContextMenuStrip = logsMenu;
+                    }
+                    if (containerIndex == 1)
+                    {
+                        TreeNode tnchild = tn.Nodes.Add(containerClientWrite.Name);
+                        tnchild.ContextMenuStrip = logsMenu;
+                    }
+                    if (containerIndex == 2)
+                    {
+                        TreeNode tnchild = tn.Nodes.Add(containerClientDelete.Name);
+                        tnchild.ContextMenuStrip = logsMenu;
+                    }
+
+                    treeView.Nodes["Connections"].Nodes["StorageAccounts"].ExpandAll();
+                }
+            }
+            else if (ClassicLogs && containerClient.Exists())
+            {
+                TreeNode tnchild = tn.Nodes.Add(containerClient.Name);
+                tnchild.ContextMenuStrip = logsMenu;
+                treeView.Nodes["Connections"].Nodes["StorageAccounts"].ExpandAll();
+            }
+            else
+            {
+                MessageBox.Show(containerName + " container not found!");
+                saConnectionString.Clear();
             }
         }
 
@@ -1005,7 +1128,7 @@ namespace AzureStorageLogReader
                 this.spinningCirclesConnectionPane.Visible = true;
                 this.spinningCircles.Visible = true;
 
-                backgroundworkerConnectionPaneEH.RunWorkerAsync(new Tuple<object,int>(this,cpf.Max));
+                backgroundworkerConnectionPaneEH.RunWorkerAsync(new Tuple<object, int>(this, cpf.Max));
 
             }
         }
@@ -1022,9 +1145,9 @@ namespace AzureStorageLogReader
         private string GetSANameFromCS(string connectionString)
         {
             string[] connSplited = connectionString.Split(';');
-            foreach(string str in connSplited)
+            foreach (string str in connSplited)
             {
-                if(str.Contains("AccountName"))
+                if (str.Contains("AccountName"))
                 {
                     var saname = str.Split('=')[1];
                     return saname;
@@ -1040,7 +1163,6 @@ namespace AzureStorageLogReader
         /// <param name="e"></param>
         private void LoadLabel_Click(object sender, EventArgs e)
         {
-
             //Get Filter parameters
             FilterSAForm cpf = new FilterSAForm();
 
@@ -1054,12 +1176,12 @@ namespace AzureStorageLogReader
                 //Load data
 
                 this.spinningCirclesConnectionPane.Visible = true;
-     
-                backgroundworkerConnectionPane.RunWorkerAsync(new Tuple<string,int>(cpf.Prefix, cpf.Max));
-                
+
+                backgroundworkerConnectionPane.RunWorkerAsync(new Tuple<string, int>(cpf.Prefix, cpf.Max));
+
             }
         }
-   
+
         private void SendAlltoTable_Click(object sender, EventArgs e)
         {
             this.spinningCirclesConnectionPane.Visible = true;
@@ -1067,7 +1189,7 @@ namespace AzureStorageLogReader
 
             dataGridView.DataSource = null;
 
-            backgroundworkerConnectionPaneLoadAll.RunWorkerAsync();   
+            backgroundworkerConnectionPaneLoadAll.RunWorkerAsync();
         }
 
         /// <summary>
@@ -1089,7 +1211,7 @@ namespace AzureStorageLogReader
             BlobServiceClient blobServiceClient = new BlobServiceClient(connectionString);
             // Get the container client object
 
-            string containerName = GetCurrentFolderForLogs(); 
+            string containerName = GetCurrentFolderForLogs();
 
             BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName);
 
@@ -1125,6 +1247,29 @@ namespace AzureStorageLogReader
         {
             saConnectionString.Clear();
             treeView.Nodes["Connections"].Nodes["StorageAccounts"].Nodes.Clear();
+            containerIndex = 0;
+        }
+
+        /// <summary>
+        /// Refresh the storage account connection from the treeview
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void RefreshLabel_Click(object sender, EventArgs e)
+        {
+            containerIndex = 0;
+            if (treeView.Nodes["Connections"].Nodes["StorageAccounts"].Nodes.Count > 0)
+            {
+                isRefreshed = true;
+                //dataGridView.DataSource = null;
+
+                mainDataTable.Clear();
+                this.dataGridView.DataSource = this.mainDataTable;
+
+                currentStorageAccountName = this.treeView.Nodes["Connections"].Nodes["StorageAccounts"].Nodes[0].Text;
+                treeView.Nodes["Connections"].Nodes["StorageAccounts"].Nodes[0].Nodes.Clear();
+                treeView_DoubleClick(this.treeView, null);
+            }
         }
 
 
