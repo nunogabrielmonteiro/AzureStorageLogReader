@@ -4,6 +4,24 @@
 
 It is a GUI Windows application (.Net 4.8) that allows to read and export the Azure Storage Log files.  <a href="https://nunogabrielmonteiro.github.io/AzureStorageLogReader/">(Check the Website)</a>
 
+<b>Version 1.4.0.</b>
+Updates:
+
+1. Added new feature to choose log from containers "insights-logs-storagewrite" and "insights-logs-storagedelete" 
+2. Added a form "Select Container" to display and choose from the above containers
+3. Added "Refresh" feature to open the "Select Container" form
+
+
+<img width="394" alt="image" src="https://user-images.githubusercontent.com/89640397/222324704-9c416417-84c0-495d-b51e-10d823fd6473.png">
+
+<img width="353" alt="image" src="https://user-images.githubusercontent.com/89640397/222325248-a6b4c584-77c3-40da-9bc6-f01f147020ea.png">
+
+<img width="188" alt="image" src="https://user-images.githubusercontent.com/89640397/222325315-3babcebe-b15f-4b5e-8bb3-de2a732c2679.png">
+
+<img width="346" alt="image" src="https://user-images.githubusercontent.com/89640397/222325350-dece2ecc-bdae-4945-8151-31d6428b8d57.png">
+
+
+
 <b>Version 1.3.0.</b>
 
 Updates:
